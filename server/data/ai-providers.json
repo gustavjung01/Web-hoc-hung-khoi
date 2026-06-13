@@ -1,0 +1,27 @@
+{
+  "activeProvider": "claude",
+  "providers": {
+    "claude": {
+      "name": "Claude (AI Prime Tech)",
+      "baseUrl": "",
+      "authToken": "",
+      "model": "claude-3-haiku-20240307",
+      "enabled": true
+    },
+    "gemini": {
+      "name": "Google Gemini (Direct)",
+      "baseUrl": "https://generativelanguage.googleapis.com/v1beta",
+      "apiKey": "",
+      "model": "gemini-2.0-flash",
+      "enabled": false
+    },
+    "vertex": {
+      "name": "Google Vertex AI",
+      "projectId": "",
+      "location": "us-central1",
+      "credentialsJson": "",
+      "model": "gemini-2.0-flash",
+      "enabled": false
+    }
+  }
+}

@@ -1,0 +1,314 @@
+{
+  "products": [
+    {
+      "id": "leaf_grade1_12m",
+      "name": "Lớp Lá + Lớp 01",
+      "description": "Gói học tập cho học sinh Lớp Lá (mầm non) và Lớp 1, thời hạn 12 tháng",
+      "price": 299000,
+      "originalPrice": 349000,
+      "currency": "VND",
+      "billingCycle": "yearly",
+      "durationMonths": 12,
+      "gradeIds": [
+        0,
+        1
+      ],
+      "gradeNames": [
+        "Lớp Lá",
+        "Lớp 1"
+      ],
+      "maxGrades": 2,
+      "features": [
+        "Truy cập đầy đủ nội dung Lớp Lá và Lớp 1",
+        "Giọng đọc tiêu chuẩn",
+        "Luyện tập không giới hạn",
+        "Theo dõi tiến độ học tập",
+        "Hỗ trợ kỹ thuật qua Zalo"
+      ],
+      "targetAudience": "Học sinh chuẩn bị vào lớp 1, học sinh lớp 1",
+      "isActive": true,
+      "sortOrder": 1,
+      "badge": "Tiết kiệm 14%"
+    },
+    {
+      "id": "grade2_12m",
+      "name": "Lớp 02",
+      "description": "Gói học tập cho học sinh Lớp 2, thời hạn 12 tháng",
+      "price": 299000,
+      "originalPrice": 349000,
+      "currency": "VND",
+      "billingCycle": "yearly",
+      "durationMonths": 12,
+      "gradeIds": [
+        2
+      ],
+      "gradeNames": [
+        "Lớp 2"
+      ],
+      "maxGrades": 1,
+      "features": [
+        "Truy cập đầy đủ nội dung Lớp 2",
+        "Giọng đọc tiêu chuẩn",
+        "Luyện tập không giới hạn",
+        "Theo dõi tiến độ học tập",
+        "Hỗ trợ kỹ thuật qua Zalo"
+      ],
+      "targetAudience": "Học sinh lớp 2",
+      "isActive": true,
+      "sortOrder": 2,
+      "badge": null
+    },
+    {
+      "id": "grade3_12m",
+      "name": "Lớp 03",
+      "description": "Gói học tập cho học sinh Lớp 3, thời hạn 12 tháng",
+      "price": 349000,
+      "originalPrice": 399000,
+      "currency": "VND",
+      "billingCycle": "yearly",
+      "durationMonths": 12,
+      "gradeIds": [
+        3
+      ],
+      "gradeNames": [
+        "Lớp 3"
+      ],
+      "maxGrades": 1,
+      "features": [
+        "Truy cập đầy đủ nội dung Lớp 3",
+        "Giọng đọc tiêu chuẩn",
+        "Luyện tập không giới hạn",
+        "Theo dõi tiến độ học tập",
+        "Hỗ trợ kỹ thuật qua Zalo"
+      ],
+      "targetAudience": "Học sinh lớp 3",
+      "isActive": true,
+      "sortOrder": 3,
+      "badge": null
+    },
+    {
+      "id": "grade4_12m",
+      "name": "Lớp 04",
+      "description": "Gói học tập cho học sinh Lớp 4, thời hạn 12 tháng",
+      "price": 349000,
+      "originalPrice": 399000,
+      "currency": "VND",
+      "billingCycle": "yearly",
+      "durationMonths": 12,
+      "gradeIds": [
+        4
+      ],
+      "gradeNames": [
+        "Lớp 4"
+      ],
+      "maxGrades": 1,
+      "features": [
+        "Truy cập đầy đủ nội dung Lớp 4",
+        "Giọng đọc tiêu chuẩn",
+        "Luyện tập không giới hạn",
+        "Theo dõi tiến độ học tập",
+        "Hỗ trợ kỹ thuật qua Zalo"
+      ],
+      "targetAudience": "Học sinh lớp 4",
+      "isActive": true,
+      "sortOrder": 4,
+      "badge": null
+    },
+    {
+      "id": "grade5_12m",
+      "name": "Lớp 05",
+      "description": "Gói học tập cho học sinh Lớp 5, thời hạn 12 tháng",
+      "price": 349000,
+      "originalPrice": 399000,
+      "currency": "VND",
+      "billingCycle": "yearly",
+      "durationMonths": 12,
+      "gradeIds": [
+        5
+      ],
+      "gradeNames": [
+        "Lớp 5"
+      ],
+      "maxGrades": 1,
+      "features": [
+        "Truy cập đầy đủ nội dung Lớp 5",
+        "Giọng đọc tiêu chuẩn",
+        "Luyện tập không giới hạn",
+        "Theo dõi tiến độ học tập",
+        "Hỗ trợ kỹ thuật qua Zalo"
+      ],
+      "targetAudience": "Học sinh lớp 5",
+      "isActive": true,
+      "sortOrder": 5,
+      "badge": null
+    },
+    {
+      "id": "grade6_12m",
+      "name": "Lớp 06",
+      "description": "Gói học tập cho học sinh Lớp 6, thời hạn 12 tháng",
+      "price": 349000,
+      "originalPrice": 399000,
+      "currency": "VND",
+      "billingCycle": "yearly",
+      "durationMonths": 12,
+      "gradeIds": [
+        6
+      ],
+      "gradeNames": [
+        "Lớp 6"
+      ],
+      "maxGrades": 1,
+      "appId": "app-lop-06",
+      "appUrl": "https://app.hochungkhoi.site/lop-06/",
+      "features": [
+        "Truy cập đầy đủ nội dung Lớp 6",
+        "Giọng đọc tiêu chuẩn",
+        "Luyện tập không giới hạn",
+        "Theo dõi tiến độ học tập",
+        "Hỗ trợ kỹ thuật qua Zalo"
+      ],
+      "targetAudience": "Học sinh lớp 6",
+      "isActive": true,
+      "sortOrder": 6,
+      "badge": null
+    },
+    {
+      "id": "bundle_3_grades_12m",
+      "name": "Gói 03 lớp",
+      "description": "Gói học tập linh hoạt - tự chọn 3 lớp bất kỳ, thời hạn 12 tháng. Tiết kiệm hơn mua lẻ.",
+      "price": 599000,
+      "originalPrice": 897000,
+      "currency": "VND",
+      "billingCycle": "yearly",
+      "durationMonths": 12,
+      "gradeIds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "gradeNames": [
+        "Lớp Lá",
+        "Lớp 1",
+        "Lớp 2",
+        "Lớp 3",
+        "Lớp 4",
+        "Lớp 5"
+      ],
+      "maxGrades": 3,
+      "features": [
+        "Tự chọn đúng 3 lớp bất kỳ từ Lớp Lá đến Lớp 5",
+        "Truy cập đầy đủ nội dung 3 lớp đã chọn",
+        "Giọng đọc tiêu chuẩn",
+        "Luyện tập không giới hạn",
+        "Theo dõi tiến độ học tập",
+        "Hỗ trợ kỹ thuật qua Zalo",
+        "Tiết kiệm 33% so với mua lẻ"
+      ],
+      "targetAudience": "Gia đình có nhiều con hoặc học sinh cần ôn tập đa lớp",
+      "isActive": true,
+      "sortOrder": 7,
+      "badge": "Tiết kiệm 33%",
+      "requiresGradeSelection": true,
+      "selectionPrompt": "Vui lòng chọn đúng 3 lớp bạn muốn học. Sau khi chọn, bạn không thể đổi lớp khác."
+    },
+    {
+      "id": "grade7_12m",
+      "name": "Lớp 07",
+      "description": "Gói học tập cho học sinh Lớp 7, thời hạn 12 tháng",
+      "price": 349000,
+      "originalPrice": 399000,
+      "currency": "VND",
+      "billingCycle": "yearly",
+      "durationMonths": 12,
+      "gradeIds": [
+        7
+      ],
+      "gradeNames": [
+        "Lớp 7"
+      ],
+      "maxGrades": 1,
+      "appId": "app-lop-07",
+      "appUrl": "https://app.hochungkhoi.site/lop-07/",
+      "features": [
+        "Truy cập đầy đủ nội dung Lớp 7",
+        "Dữ liệu bài học đã enrich",
+        "Luyện tập không giới hạn",
+        "Theo dõi tiến độ học tập",
+        "Hỗ trợ kỹ thuật qua Zalo"
+      ],
+      "targetAudience": "Học sinh lớp 7",
+      "isActive": true,
+      "sortOrder": 8,
+      "badge": null
+    },
+    {
+      "id": "ai_credit_trial",
+      "name": "Trải nghiệm",
+      "description": "Gói bổ sung 390 Dopi để trải nghiệm AI nhanh, dùng thử chatbot và giải nghĩa cơ bản.",
+      "price": 39000,
+      "originalPrice": 39000,
+      "currency": "VND",
+      "type": "ai_credit",
+      "credits": 390,
+      "features": [
+        "Dùng để thử chatbot",
+        "Giải nghĩa bài cơ bản",
+        "Nạp nhanh khi cần"
+      ],
+      "isActive": true,
+      "sortOrder": 10,
+      "badge": "Bắt đầu"
+    },
+    {
+      "id": "ai_credit_basic",
+      "name": "Cơ bản",
+      "description": "Gói bổ sung 790 Dopi cho nhu cầu học thường xuyên, cân bằng giữa chi phí và sử dụng.",
+      "price": 79000,
+      "originalPrice": 79000,
+      "currency": "VND",
+      "type": "ai_credit",
+      "credits": 790,
+      "features": [
+        "Chat hỏi đáp",
+        "Giải thích bài",
+        "Tạo luyện tập"
+      ],
+      "isActive": true,
+      "sortOrder": 11,
+      "badge": "Bán chạy"
+    },
+    {
+      "id": "ai_credit_saver",
+      "name": "Siêu tiết kiệm",
+      "description": "Gói bổ sung 1190 Dopi cho người dùng dùng AI nhiều, chủ động nạp lớn một lần.",
+      "price": 119000,
+      "originalPrice": 119000,
+      "currency": "VND",
+      "type": "ai_credit",
+      "credits": 1190,
+      "features": [
+        "Dùng dài hạn",
+        "Ưu tiên tiết kiệm",
+        "Không phải nạp nhiều lần"
+      ],
+      "isActive": true,
+      "sortOrder": 12,
+      "badge": "Tiết kiệm"
+    }
+  ],
+  "metadata": {
+    "version": "1.0.1",
+    "lastUpdated": "2026-06-10T00:00:00.000Z",
+    "currency": "VND",
+    "paymentMethods": [
+      "bank_transfer"
+    ],
+    "supportContact": {
+      "zalo": "0902964685",
+      "phone": "0902964685"
+    }
+  }
+}

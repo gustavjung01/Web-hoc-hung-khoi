@@ -1,0 +1,35 @@
+{
+  "name": "hoctap-lop-06",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "patch:purchase": "node scripts/patch-app-card-purchase.mjs",
+    "prebuild": "node scripts/patch-app-card-purchase.mjs",
+    "build": "tsc && vite build",
+    "prebuild:vercel": "node scripts/patch-app-card-purchase.mjs",
+    "build:vercel": "tsc && vite build --base=/",
+    "build:github-pages": "tsc && vite build --base=/hoctap-lop-06/",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@clerk/clerk-react": "^5.61.6",
+    "@clerk/clerk-sdk-node": "^4.13.23",
+    "@tailwindcss/vite": "^4.3.0",
+    "express": "^5.2.1",
+    "lucide-react": "^0.469.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^5.6.2",
+    "vite": "^6.0.5"
+  }
+}

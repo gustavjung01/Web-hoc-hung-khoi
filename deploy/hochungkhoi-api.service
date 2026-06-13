@@ -1,0 +1,25 @@
+[Unit]
+Description=Hoc Hung Khoi Payment API Server
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/hochungkhoi-backend
+Environment=NODE_ENV=production
+EnvironmentFile=/opt/hochungkhoi-backend/.env
+ExecStart=/usr/bin/node index.js
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/hochungkhoi-backend/data
+
+[Install]
+WantedBy=multi-user.target

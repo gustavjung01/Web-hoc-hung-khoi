@@ -1,0 +1,85 @@
+{
+  "version": "clean-separated-webp-v1",
+  "files": [
+    {
+      "file": "public/images/home/hero-learning-hub.webp",
+      "source": "cropped from clean collage preview",
+      "size": [
+        757,
+        350
+      ]
+    },
+    {
+      "file": "public/images/home/hero-soft-orbit.webp",
+      "source": "cropped from clean collage preview",
+      "size": [
+        725,
+        350
+      ]
+    },
+    {
+      "file": "public/images/home/app-grade-6.webp",
+      "source": "cropped from clean collage preview",
+      "size": [
+        341,
+        220
+      ]
+    },
+    {
+      "file": "public/images/home/app-grade-7.webp",
+      "source": "cropped from clean collage preview",
+      "size": [
+        368,
+        220
+      ]
+    },
+    {
+      "file": "public/images/home/app-primary.webp",
+      "source": "cropped from clean collage preview",
+      "size": [
+        358,
+        220
+      ]
+    },
+    {
+      "file": "public/images/home/app-highschool.webp",
+      "source": "cropped from clean collage preview",
+      "size": [
+        360,
+        220
+      ]
+    },
+    {
+      "file": "public/images/home/feature-webapp.webp",
+      "source": "cropped from clean collage preview",
+      "size": [
+        341,
+        221
+      ]
+    },
+    {
+      "file": "public/images/home/feature-desktop.webp",
+      "source": "cropped from clean collage preview",
+      "size": [
+        368,
+        221
+      ]
+    },
+    {
+      "file": "public/images/home/feature-structured-data.webp",
+      "source": "cropped from clean collage preview",
+      "size": [
+        358,
+        221
+      ]
+    },
+    {
+      "file": "public/images/home/support-contact.webp",
+      "source": "cropped from clean collage preview",
+      "size": [
+        360,
+        221
+      ]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "schema": {
+    "orders": {
+      "description": "Đơn hàng chờ thanh toán và đã thanh toán",
+      "fields": {
+        "orderId": "string - Mã đơn hàng unique (HTT-{timestamp}-{random})",
+        "productId": "string - ID sản phẩm từ products.json",
+        "productName": "string - Tên sản phẩm",
+        "customerEmail": "string - Email khách hàng (từ Clerk)",
+        "customerName": "string - Tên khách hàng",
+        "amount": "number - Số tiền (VND)",
+        "currency": "string - VND",
+        "status": "string - pending | paid | cancelled | expired",
+        "selectedGrades": "number[] - Chỉ cho bundle_3_grades_12m, lưu 3 lớp đã chọn",
+        "paymentMethod": "string - bank_transfer",
+        "paymentRef": "string - Mã giao dịch ngân hàng",
+        "paidAt": "string - ISO timestamp khi thanh toán",
+        "expiresAt": "string - ISO timestamp hết hạn đơn",
+        "createdAt": "string - ISO timestamp tạo đơn",
+        "updatedAt": "string - ISO timestamp cập nhật",
+        "licenseKey": "string - Key được tạo sau khi thanh toán"
+      }
+    },
+    "licenses": {
+      "description": "License key đã kích hoạt",
+      "fields": {
+        "licenseKey": "string - Key unique (HHK-{hash})",
+        "orderId": "string - Tham chiếu đơn hàng",
+        "productId": "string - ID sản phẩm",
+        "productName": "string - Tên sản phẩm",
+        "customerEmail": "string - Email chủ sở hữu",
+        "allowedGrades": "number[] - Các lớp được phép học",
+        "activatedGrades": "number[] - 3 lớp đã chọn (chỉ cho bundle)",
+        "status": "string - active | expired | revoked",
+        "expiresAt": "string - ISO timestamp hết hạn",
+        "activatedAt": "string - ISO timestamp kích hoạt",
+        "lastVerifiedAt": "string - ISO timestamp verify gần nhất",
+        "deviceLimit": "number - Số thiết bị tối đa",
+        "devices": "array - Danh sách thiết bị đã kích hoạt"
+      }
+    },
+    "licenseActivations": {
+      "description": "Lịch sử kích hoạt license trên thiết bị",
+      "fields": {
+        "activationId": "string - ID unique",
+        "licenseKey": "string - Key",
+        "deviceId": "string - Device fingerprint",
+        "deviceName": "string - Tên thiết bị",
+        "appId": "string - app-cap-01 hoặc web",
+        "ipAddress": "string - IP",
+        "activatedAt": "string - ISO timestamp",
+        "lastSeenAt": "string - ISO timestamp",
+        "isActive": "boolean - Còn active không"
+      }
+    }
+  }
+}

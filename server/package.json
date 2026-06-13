@@ -1,0 +1,23 @@
+{
+  "name": "hochungkhoi-payment-api",
+  "version": "1.0.0",
+  "description": "SePay webhook backend for hochungkhoi.site",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "echo 'Tests not implemented yet' && exit 0",
+    "lint": "echo 'Lint not configured yet' && exit 0"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^4.22.2"
+  },
+  "optionalDependencies": {
+    "resend": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

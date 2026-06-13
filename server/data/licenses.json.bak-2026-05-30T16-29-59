@@ -1,0 +1,107 @@
+{
+  "licenses": [
+    {
+      "licenseKey": "HHK-FYHV-NX8B-BDVS-MX48",
+      "orderId": "HTT-MPM91Z6C-QPJU",
+      "productId": "grade2_12m",
+      "productName": "Lớp 02",
+      "appId": "app-cap-01",
+      "customerEmail": "test@example.com",
+      "allowedGrades": [
+        2
+      ],
+      "selectedGrades": [],
+      "status": "active",
+      "startDate": "2026-05-26T06:23:53.176Z",
+      "expiryDate": "2027-05-26T06:23:53.177Z",
+      "expiresAt": "2027-05-26T06:23:53.177Z",
+      "activatedAt": null,
+      "lastVerifiedAt": null,
+      "deviceLimit": 1,
+      "plan": "grade2_12m",
+      "durationMonths": 12
+    },
+    {
+      "licenseKey": "HHK-ZHTT-PAW7-SJ9D-P334",
+      "orderId": "HTT-MPM91Z75-5LZS",
+      "productId": "bundle_3_grades_12m",
+      "productName": "Gói 03 lớp",
+      "appId": "app-cap-01",
+      "customerEmail": "test3@example.com",
+      "allowedGrades": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "selectedGrades": [
+        {
+          "id": 1,
+          "name": "Lớp 1"
+        },
+        {
+          "id": 2,
+          "name": "Lớp 2"
+        },
+        {
+          "id": 3,
+          "name": "Lớp 3"
+        }
+      ],
+      "status": "active",
+      "startDate": "2026-05-26T06:23:53.202Z",
+      "expiryDate": "2027-05-26T06:23:53.203Z",
+      "expiresAt": "2027-05-26T06:23:53.203Z",
+      "activatedAt": null,
+      "lastVerifiedAt": null,
+      "deviceLimit": 1,
+      "plan": "bundle_3_grades_12m",
+      "durationMonths": 12
+    },
+    {
+      "licenseKey": "9DY5-UN4U-SZMN-EP5D",
+      "orderId": "TEST-1780042572618",
+      "productId": "leaf_grade1_12m",
+      "productName": "Lớp Lá + Lớp 1 (12 tháng)",
+      "appId": "app-cap-01",
+      "customerEmail": "gustavjung01@gmail.com",
+      "allowedGrades": [
+        0,
+        1
+      ],
+      "selectedGrades": [],
+      "status": "active",
+      "startDate": "2026-05-29T08:16:12.618Z",
+      "expiryDate": "2027-05-29T08:16:12.618Z",
+      "createdAt": "2026-05-29T08:16:12.618Z",
+      "updatedAt": "2026-05-29T08:16:12.618Z",
+      "activations": []
+    },
+    {
+      "licenseKey": "HHK-AYYG-95SC-UQJ7-KGSH",
+      "orderId": "TEST-1780152228896",
+      "productId": "leaf_grade1_12m",
+      "productName": "Lớp Lá + Lớp 1",
+      "appId": "app-cap-01",
+      "customerEmail": "gustavjung01@gmail.com",
+      "allowedGrades": [
+        0,
+        1
+      ],
+      "selectedGrades": [
+        0,
+        1
+      ],
+      "status": "active",
+      "startDate": "2026-05-30T14:43:48.896Z",
+      "expiryDate": "2027-05-30T14:43:48.896Z",
+      "expiresAt": "2027-05-30T14:43:48.896Z",
+      "deviceLimit": 2,
+      "createdAt": "2026-05-30T14:43:48.896Z",
+      "updatedAt": "2026-05-30T14:43:48.896Z",
+      "activations": []
+    }
+  ]
+}

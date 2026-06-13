@@ -1,0 +1,46 @@
+node_modules/
+dist/
+build/
+.vercel/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local secrets - do not commit
+docs/keys.md
+.env
+.env.local
+.env.production
+.env.*
+.env.*.local
+!.env.example
+
+# Dist
+web-home-dist.zip
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+index.js.updated.tar
+vps-api-health-check.txt
+s -ExecutionPolicy*
+
+# Dev server logs
+dev-server.out.log
+dev-server.err.log
+*.log
+
+# Server webhook mock data (local only)
+server/data/*.jsonl
+
+# Runtime backend data, do not commit
+server/data/orders.json
+server/data/licenses.json
+server/data/activations.json
+server/data/transactions.json
+server/data/email-logs.json
+
+# Keep these tracked
+!server/data/products.json
+!server/data/schema.json
