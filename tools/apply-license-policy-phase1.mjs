@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 
 function read(relPath) {
-  return fs.readFileSync(path.join(repoRoot, relPath), 'utf8');
+  return fs.readFileSync(path.join(repoRoot, relPath), 'utf8').replace(/\r\n/g, '\n');
 }
 
 function write(relPath, content) {
@@ -34,6 +34,10 @@ function insertAfter(content, search, insertion, label) {
 function patchServer() {
   const relPath = 'server/index.js';
   let content = read(relPath);
+
+  if (content.includes('const DEFAULT_LICENSE_DEVICE_LIMIT = 1;') && content.includes("/api/admin/licenses/:licenseKey/devices/reset")) {
+    return;
+  }
 
   content = insertAfter(
     content,
@@ -95,6 +99,10 @@ function patchAdminLicensesPage() {
   const relPath = 'src/AdminLicensesPage.tsx';
   let content = read(relPath);
 
+  if (content.includes('activeDeviceCount?: number;') && content.includes('handleResetDevices')) {
+    return;
+  }
+
   content = replaceOnce(
     content,
     `  devices?: { deviceId: string; deviceName: string; lastSeenAt: string }[];\n`,
@@ -140,6 +148,10 @@ function patchAdminLicensesPage() {
 function patchPolicyDoc() {
   const relPath = 'docs/license-policy.md';
   let content = read(relPath);
+
+  if (content.includes('## Triển khai đợt 1')) {
+    return;
+  }
 
   content = replaceOnce(
     content,

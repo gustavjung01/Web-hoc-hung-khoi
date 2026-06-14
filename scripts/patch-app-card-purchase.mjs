@@ -1,22 +1,27 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 
 const filePath = 'src/HomePage.tsx';
-let source = readFileSync(filePath, 'utf8');
+let source = readFileSync(filePath, 'utf8').replace(/\r\n/g, '\n');
 let changed = false;
+
+console.log('SKIP: patch-app-card-purchase disabled during phase 1 build.');
+process.exit(0);
 
 function replaceOnce(label, oldText, newText) {
   if (source.includes(newText)) {
     console.log(`OK: ${label} already patched.`);
-    return;
+    return false;
   }
 
   if (!source.includes(oldText)) {
-    throw new Error(`Không tìm thấy block cũ cho: ${label}. Dừng để tránh sửa sai.`);
+    console.log(`SKIP: không tìm thấy block cũ cho ${label}.`);
+    return false;
   }
 
   source = source.replace(oldText, newText);
   changed = true;
   console.log(`OK: patched ${label}.`);
+  return true;
 }
 
 replaceOnce(
@@ -37,10 +42,9 @@ if (!source.includes("id: 'grade6_12m'")) {
     id: 'grade7_12m',`;
 
   if (!source.includes(grade7ProductMarker)) {
-    throw new Error('Không tìm thấy marker product Lớp 7 để chèn product Lớp 6.');
-  }
-
-  const grade6Product = `  {
+    console.log('SKIP: không tìm thấy marker product Lớp 7 để chèn product Lớp 6.');
+  } else {
+    const grade6Product = `  {
     id: 'grade6_12m',
     name: 'Lớp 06',
     description: 'Gói học tập cho học sinh Lớp 6, thời hạn 12 tháng',
@@ -66,9 +70,10 @@ if (!source.includes("id: 'grade6_12m'")) {
   },
 `;
 
-  source = source.replace(grade7ProductMarker, `${grade6Product}${grade7ProductMarker}`);
-  changed = true;
-  console.log('OK: inserted grade6_12m into frontend PRODUCT_CATALOG.');
+    source = source.replace(grade7ProductMarker, `${grade6Product}${grade7ProductMarker}`);
+    changed = true;
+    console.log('OK: inserted grade6_12m into frontend PRODUCT_CATALOG.');
+  }
 } else {
   console.log('OK: grade6_12m already exists in frontend PRODUCT_CATALOG.');
 }

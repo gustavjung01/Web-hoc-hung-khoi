@@ -12,10 +12,20 @@ interface License {
   createdAt: string;
   expiresAt: string;
   deviceLimit: number;
+  activeDeviceCount?: number;
   allowedGrades: number[];
   selectedGrades?: number[];
   adminNotes?: string;
-  devices?: { deviceId: string; deviceName: string; lastSeenAt: string }[];
+  devices?: {
+    activationId?: string;
+    deviceId: string;
+    deviceName?: string;
+    appId?: string | null;
+    ipAddress?: string | null;
+    activatedAt?: string | null;
+    lastSeenAt?: string | null;
+    isActive?: boolean;
+  }[];
 }
 
 interface Product {
@@ -64,13 +74,13 @@ function AdminLicensesPage({ onBack }: { onBack: () => void }) {
     customerEmail: '',
     productId: '',
     durationMonths: 12,
-    deviceLimit: 2,
+    deviceLimit: 1,
     notes: ''
   });
   const [createdLicense, setCreatedLicense] = useState<License | null>(null);
 
   const [editingLicense, setEditingLicense] = useState<License | null>(null);
-  const [editForm, setEditForm] = useState({ status: '', extendMonths: 0, deviceLimit: 2, notes: '' });
+  const [editForm, setEditForm] = useState({ status: '', extendMonths: 0, deviceLimit: 1, notes: '' });
 
   // Check if current user is admin
   useEffect(() => {
@@ -198,7 +208,7 @@ function AdminLicensesPage({ onBack }: { onBack: () => void }) {
       const data = await res.json();
       if (data.ok) {
         setCreatedLicense(data.license);
-        setNewLicense({ customerEmail: '', productId: '', durationMonths: 12, deviceLimit: 2, notes: '' });
+        setNewLicense({ customerEmail: '', productId: '', durationMonths: 12, deviceLimit: 1, notes: '' });
         fetchLicenses();
       } else {
         setError(data.error || 'Failed to create license');
@@ -238,6 +248,43 @@ function AdminLicensesPage({ onBack }: { onBack: () => void }) {
     }
   };
 
+  const handleResetDevices = async (licenseKey: string) => {
+    const deviceId = window.prompt('Nhập deviceId để reset 1 thiết bị. Để trống rồi bấm OK để reset toàn bộ thiết bị đang active.');
+    if (deviceId === null) return;
+
+    const normalizedDeviceId = deviceId.trim();
+    if (!normalizedDeviceId) {
+      const confirmed = confirm('Reset toàn bộ thiết bị đang active của license này?');
+      if (!confirmed) return;
+    }
+
+    setLoading(true);
+    try {
+      const token = await getToken();
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const res = await fetch(`${API_BASE}/api/admin/licenses/${licenseKey}/devices/reset`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(normalizedDeviceId ? { deviceId: normalizedDeviceId } : {})
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setCreatedLicense(data.license || null);
+        fetchLicenses();
+      } else {
+        setError(data.error || 'Failed to reset devices');
+      }
+    } catch {
+      setError('Network error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDelete = async (licenseKey: string) => {
     if (!confirm('Bạn chắc chắn muốn xóa license này?')) return;
     setLoading(true);
@@ -269,8 +316,22 @@ function AdminLicensesPage({ onBack }: { onBack: () => void }) {
     navigator.clipboard.writeText(text);
   };
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('vi-VN');
+  const formatDate = (dateStr?: string | null) => {
+    if (!dateStr) return '-';
+    const date = new Date(dateStr);
+    return Number.isNaN(date.getTime()) ? '-' : date.toLocaleDateString('vi-VN');
+  };
+
+  const getLicenseDeviceSnapshot = (license: License) => {
+    const devices = Array.isArray(license.devices) ? license.devices : [];
+    const activeDeviceCount = Number.isFinite(Number(license.activeDeviceCount))
+      ? Number(license.activeDeviceCount)
+      : devices.length;
+    const deviceLimit = Number.isFinite(Number(license.deviceLimit)) && Number(license.deviceLimit) > 0
+      ? Number(license.deviceLimit)
+      : 1;
+
+    return { activeDeviceCount, deviceLimit, devices };
   };
 
   const getStatusBadge = (status: string) => {
@@ -542,17 +603,17 @@ function AdminLicensesPage({ onBack }: { onBack: () => void }) {
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Giới hạn thiết bị</label>
-                      <input
-                        type="number"
-                        min={1}
-                        max={10}
-                        value={newLicense.deviceLimit}
-                        onChange={(e) => setNewLicense({ ...newLicense, deviceLimit: parseInt(e.target.value) || 2 })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Giới hạn thiết bị</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={10}
+                      value={newLicense.deviceLimit}
+                      onChange={(e) => setNewLicense({ ...newLicense, deviceLimit: parseInt(e.target.value) || 1 })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                    />
+                  </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>
@@ -631,7 +692,7 @@ function AdminLicensesPage({ onBack }: { onBack: () => void }) {
                     min={1}
                     max={10}
                     value={editForm.deviceLimit}
-                    onChange={(e) => setEditForm({ ...editForm, deviceLimit: parseInt(e.target.value) || 2 })}
+                    onChange={(e) => setEditForm({ ...editForm, deviceLimit: parseInt(e.target.value) || 1 })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
                   />
                 </div>
@@ -692,8 +753,28 @@ function AdminLicensesPage({ onBack }: { onBack: () => void }) {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="font-medium text-gray-900">{license.productName}</div>
-                      <div className="text-xs text-gray-500">{license.deviceLimit} thiết bị</div>
+                      {(() => {
+                        const { activeDeviceCount, deviceLimit, devices } = getLicenseDeviceSnapshot(license);
+
+                        return (
+                          <>
+                            <div className="font-medium text-gray-900">{license.productName}</div>
+                            <div className="text-xs text-gray-500">{activeDeviceCount}/{deviceLimit} thiết bị active</div>
+                            {devices.length > 0 ? (
+                              <div className="mt-1 max-w-[240px] space-y-0.5 text-[11px] text-gray-400">
+                                {devices.slice(0, 2).map((device) => (
+                                  <div key={device.activationId || device.deviceId} className="truncate" title={device.deviceId}>
+                                    {device.deviceName || device.deviceId} · {formatDate(device.lastSeenAt)}
+                                  </div>
+                                ))}
+                                {devices.length > 2 ? (
+                                  <div>+{devices.length - 2} thiết bị khác</div>
+                                ) : null}
+                              </div>
+                            ) : null}
+                          </>
+                        );
+                      })()}
                     </td>
                     <td className="px-4 py-3 break-all text-gray-600">{license.customerEmail}</td>
                     <td className="px-4 py-3">{getStatusBadge(license.status)}</td>
@@ -711,13 +792,20 @@ function AdminLicensesPage({ onBack }: { onBack: () => void }) {
                             setEditForm({
                               status: license.status,
                               extendMonths: 0,
-                              deviceLimit: license.deviceLimit,
+                              deviceLimit: license.deviceLimit || 1,
                               notes: license.adminNotes || ''
                             });
                           }}
                           className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition"
                         >
                           Sửa
+                        </button>
+                        <button
+                          onClick={() => handleResetDevices(license.licenseKey)}
+                          disabled={(license.activeDeviceCount ?? license.devices?.length ?? 0) <= 0}
+                          className="px-2 py-1 text-xs bg-amber-50 text-amber-700 rounded hover:bg-amber-100 transition disabled:opacity-50"
+                        >
+                          Reset thiết bị
                         </button>
                         <button
                           onClick={() => handleDelete(license.licenseKey)}

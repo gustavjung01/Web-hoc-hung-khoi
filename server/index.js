@@ -120,6 +120,39 @@ const CORS_ORIGINS = [
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+const DEFAULT_LICENSE_DEVICE_LIMIT = 1;
+
+function normalizeLicenseDeviceLimit(value) {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_LICENSE_DEVICE_LIMIT;
+}
+
+function getActiveLicenseDevices(licenseKey, activations = loadActivations()) {
+  const normalizedKey = String(licenseKey || '').toUpperCase();
+  return activations
+    .filter((activation) => activation.licenseKey === normalizedKey && activation.isActive)
+    .map((activation) => ({
+      activationId: activation.activationId,
+      deviceId: activation.deviceId,
+      deviceName: activation.deviceName || 'Unknown Device',
+      appId: activation.appId || null,
+      ipAddress: activation.ipAddress || null,
+      activatedAt: activation.activatedAt || null,
+      lastSeenAt: activation.lastSeenAt || null,
+      isActive: Boolean(activation.isActive),
+    }));
+}
+
+function enrichLicenseForAdmin(license, activations = loadActivations()) {
+  const devices = getActiveLicenseDevices(license.licenseKey, activations);
+  return {
+    ...license,
+    deviceLimit: normalizeLicenseDeviceLimit(license.deviceLimit),
+    activeDeviceCount: devices.length,
+    devices,
+  };
+}
+
 // CORS middleware
 app.use(cors({
   origin: (origin, callback) => {
@@ -4724,9 +4757,12 @@ app.get('/api/admin/licenses', requireAdmin, (req, res) => {
   // Sort by created date (newest first)
   licenses.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
+  const allActivations = loadActivations();
   const total = licenses.length;
   const startIndex = (page - 1) * limit;
-  const paginated = licenses.slice(startIndex, startIndex + limit);
+  const paginated = licenses
+    .slice(startIndex, startIndex + limit)
+    .map((license) => enrichLicenseForAdmin(license, allActivations));
 
   res.json({
     ok: true,
@@ -4746,7 +4782,7 @@ app.get('/api/admin/licenses', requireAdmin, (req, res) => {
  * Body: { customerEmail, productId, durationMonths, deviceLimit, notes }
  */
 app.post('/api/admin/licenses', requireAdmin, (req, res) => {
-  const { customerEmail, productId, durationMonths = 12, deviceLimit = 2, notes = '', selectedGrades = [] } = req.body;
+  const { customerEmail, productId, durationMonths = 12, deviceLimit = DEFAULT_LICENSE_DEVICE_LIMIT, notes = '', selectedGrades = [] } = req.body;
 
   if (!customerEmail || !productId) {
     return res.status(400).json({ ok: false, error: 'Missing required fields: customerEmail, productId' });
@@ -4785,7 +4821,7 @@ app.post('/api/admin/licenses', requireAdmin, (req, res) => {
     maxGrades: productMaxGrades,
     selectedGrades: finalGrades,
     status: 'active',
-    deviceLimit: parseInt(deviceLimit) || 2,
+    deviceLimit: normalizeLicenseDeviceLimit(deviceLimit),
     durationMonths: parseInt(durationMonths) || 12,
     createdAt: now.toISOString(),
     expiresAt: expiresAt.toISOString(),
@@ -4801,7 +4837,7 @@ app.post('/api/admin/licenses', requireAdmin, (req, res) => {
 
   res.json({
     ok: true,
-    license: newLicense,
+    license: enrichLicenseForAdmin(newLicense, loadActivations()),
     message: 'License created successfully'
   });
 });
@@ -4834,8 +4870,8 @@ app.patch('/api/admin/licenses/:licenseKey', requireAdmin, (req, res) => {
   }
 
   // Update device limit
-  if (deviceLimit && parseInt(deviceLimit) > 0) {
-    license.deviceLimit = parseInt(deviceLimit);
+  if (deviceLimit !== undefined) {
+    license.deviceLimit = normalizeLicenseDeviceLimit(deviceLimit);
   }
 
   // Update notes
@@ -4847,8 +4883,50 @@ app.patch('/api/admin/licenses/:licenseKey', requireAdmin, (req, res) => {
 
   res.json({
     ok: true,
-    license,
+    license: enrichLicenseForAdmin(license, loadActivations()),
     message: 'License updated successfully'
+  });
+});
+
+
+/**
+ * POST /api/admin/licenses/:licenseKey/devices/reset
+ * Deactivate all active devices for a license, or a specific deviceId when provided.
+ */
+app.post('/api/admin/licenses/:licenseKey/devices/reset', requireAdmin, (req, res) => {
+  const { licenseKey } = req.params;
+  const { deviceId } = req.body || {};
+  const normalizedKey = String(licenseKey || '').toUpperCase();
+
+  const licenses = loadLicenses();
+  const license = licenses.find(l => l.licenseKey === normalizedKey);
+
+  if (!license) {
+    return res.status(404).json({ ok: false, error: 'License not found' });
+  }
+
+  const now = new Date().toISOString();
+  const activations = loadActivations();
+  let changedCount = 0;
+
+  for (const activation of activations) {
+    const matchesLicense = activation.licenseKey === normalizedKey;
+    const matchesDevice = !deviceId || activation.deviceId === deviceId;
+    if (matchesLicense && matchesDevice && activation.isActive) {
+      activation.isActive = false;
+      activation.deactivatedAt = now;
+      activation.deactivatedBy = 'admin';
+      changedCount += 1;
+    }
+  }
+
+  saveActivations(activations);
+
+  res.json({
+    ok: true,
+    changedCount,
+    license: enrichLicenseForAdmin(license, activations),
+    message: deviceId ? 'Device reset successfully' : 'All active devices reset successfully',
   });
 });
 
@@ -5803,7 +5881,6 @@ app.listen(PORT, () => {
 });
 
 export default app;
-
 
 
 
