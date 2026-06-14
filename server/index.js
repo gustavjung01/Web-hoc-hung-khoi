@@ -121,10 +121,76 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 const DEFAULT_LICENSE_DEVICE_LIMIT = 1;
+const DEFAULT_LICENSE_WEB_SESSION_TTL_HOURS = 24;
+const LICENSE_WEB_SESSION_TTL_HOURS = (() => {
+  const parsed = Number.parseFloat(process.env.LICENSE_WEB_SESSION_TTL_HOURS);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_LICENSE_WEB_SESSION_TTL_HOURS;
+})();
+const WEB_SESSION_LIMIT = 1;
 
 function normalizeLicenseDeviceLimit(value) {
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_LICENSE_DEVICE_LIMIT;
+}
+
+function getLicenseDeviceScope(deviceId) {
+  const normalizedDeviceId = String(deviceId || '').trim().toLowerCase();
+  if (!normalizedDeviceId) return 'desktop';
+
+  const webPrefixes = ['lop6-web-', 'lop7-web-', 'cap01-web-', 'cap-01-web-', 'hhk-web-'];
+  if (normalizedDeviceId.includes('-web-') || webPrefixes.some((prefix) => normalizedDeviceId.startsWith(prefix))) {
+    return 'web';
+  }
+
+  const desktopPrefixes = ['lop6-desktop-', 'lop7-desktop-', 'cap01-desktop-', 'cap-01-desktop-', 'hhk-desktop-'];
+  if (normalizedDeviceId.includes('-desktop-') || desktopPrefixes.some((prefix) => normalizedDeviceId.startsWith(prefix))) {
+    return 'desktop';
+  }
+
+  return 'desktop';
+}
+
+function getWebSessionTtlMs() {
+  return LICENSE_WEB_SESSION_TTL_HOURS * 60 * 60 * 1000;
+}
+
+function isActivationExpiredWebSession(activation, nowMs = Date.now()) {
+  if (!activation || !activation.isActive) return false;
+  if (getLicenseDeviceScope(activation.deviceId) !== 'web') return false;
+
+  const leaseHours = Number(activation.sessionLeaseHours);
+  const leaseMs = Number.isFinite(leaseHours) && leaseHours > 0
+    ? leaseHours * 60 * 60 * 1000
+    : getWebSessionTtlMs();
+  const referenceTime = new Date(activation.lastSeenAt || activation.activatedAt || 0).getTime();
+
+  if (!Number.isFinite(referenceTime) || referenceTime <= 0) return false;
+
+  return nowMs - referenceTime >= leaseMs;
+}
+
+function releaseExpiredWebSessions(activations, now = new Date()) {
+  if (!Array.isArray(activations) || activations.length === 0) {
+    return 0;
+  }
+
+  const nowDate = now instanceof Date ? now : new Date(now);
+  const nowMs = nowDate.getTime();
+  const nowIso = Number.isFinite(nowMs) ? nowDate.toISOString() : new Date().toISOString();
+  let releasedCount = 0;
+
+  for (const activation of activations) {
+    if (!isActivationExpiredWebSession(activation, Number.isFinite(nowMs) ? nowMs : Date.now())) {
+      continue;
+    }
+
+    activation.isActive = false;
+    activation.deactivatedAt = nowIso;
+    activation.deactivatedBy = 'web-session-timeout';
+    releasedCount += 1;
+  }
+
+  return releasedCount;
 }
 
 function getActiveLicenseDevices(licenseKey, activations = loadActivations()) {
@@ -140,6 +206,12 @@ function getActiveLicenseDevices(licenseKey, activations = loadActivations()) {
       activatedAt: activation.activatedAt || null,
       lastSeenAt: activation.lastSeenAt || null,
       isActive: Boolean(activation.isActive),
+      scope: getLicenseDeviceScope(activation.deviceId),
+      deactivatedAt: activation.deactivatedAt || null,
+      deactivatedBy: activation.deactivatedBy || null,
+      sessionLeaseHours: Number.isFinite(Number(activation.sessionLeaseHours)) && Number(activation.sessionLeaseHours) > 0
+        ? Number(activation.sessionLeaseHours)
+        : null,
     }));
 }
 
@@ -2951,8 +3023,10 @@ app.get('/api/orders/:orderId', (req, res) => {
  */
 app.post('/api/licenses/activate', (req, res) => {
   const { licenseKey, appId, deviceId, deviceName } = req.body;
+  const normalizedKey = String(licenseKey || '').trim().toUpperCase();
+  const normalizedDeviceId = String(deviceId || '').trim();
   
-  if (!licenseKey || !appId || !deviceId) {
+  if (!normalizedKey || !appId || !normalizedDeviceId) {
     return res.status(400).json({ 
       ok: false, 
       error: 'Missing required fields: licenseKey, appId, deviceId' 
@@ -2960,7 +3034,7 @@ app.post('/api/licenses/activate', (req, res) => {
   }
   
   const licenses = loadLicenses();
-  const license = licenses.find(l => l.licenseKey === licenseKey.toUpperCase());
+  const license = licenses.find(l => l.licenseKey === normalizedKey);
   
   if (!license) {
     return res.status(404).json({ ok: false, status: 'invalid', error: 'Key không hợp lệ' });
@@ -2973,6 +3047,12 @@ app.post('/api/licenses/activate', (req, res) => {
   if (license.status === 'revoked') {
     return res.status(400).json({ ok: false, status: 'revoked', error: 'Key đã bị thu hồi' });
   }
+
+  const activations = loadActivations();
+  const releasedCount = releaseExpiredWebSessions(activations);
+  if (releasedCount > 0) {
+    saveActivations(activations);
+  }
   
   if (!isLicenseAppCompatible(license, appId)) {
     return res.status(403).json({
@@ -2983,43 +3063,59 @@ app.post('/api/licenses/activate', (req, res) => {
   }
   
   // Check device limit
-  const activations = loadActivations();
-  const activeDevices = activations.filter(a => 
-    a.licenseKey === licenseKey.toUpperCase() && a.isActive
-  );
-  
-  const deviceExists = activeDevices.find(d => d.deviceId === deviceId);
-  
-  // For web apps: allow same device to re-activate
-  // For desktop: device is locked to first activation
-  if (!deviceExists && activeDevices.length >= license.deviceLimit) {
-    return res.status(403).json({ 
-      ok: false, 
-      status: 'device_limit_exceeded', 
-      error: 'Key đã vượt số thiết bị cho phép' 
-    });
+  const requestedScope = getLicenseDeviceScope(normalizedDeviceId);
+  const activeDevices = activations.filter((activation) => activation.licenseKey === normalizedKey && activation.isActive);
+  const activeInSameScope = activeDevices.filter((activation) => getLicenseDeviceScope(activation.deviceId) === requestedScope);
+  const deviceExists = activeInSameScope.find((activation) => activation.deviceId === normalizedDeviceId);
+
+  if (!deviceExists) {
+    if (requestedScope === 'web' && activeInSameScope.length >= WEB_SESSION_LIMIT) {
+      return res.status(403).json({
+        ok: false,
+        status: 'web_session_active',
+        error: 'Key đang có phiên web hoạt động. Vui lòng đóng phiên cũ hoặc nhờ admin reset thiết bị.',
+      });
+    }
+
+    if (requestedScope === 'desktop' && activeInSameScope.length >= normalizeLicenseDeviceLimit(license.deviceLimit)) {
+      return res.status(403).json({ 
+        ok: false, 
+        status: 'device_limit_exceeded', 
+        error: 'Key đã vượt số thiết bị cho phép' 
+      });
+    }
   }
   
   // Record or update activation
   const now = new Date().toISOString();
   const existingActivation = activations.find(a => 
-    a.licenseKey === licenseKey.toUpperCase() && a.deviceId === deviceId
+    a.licenseKey === normalizedKey && a.deviceId === normalizedDeviceId
   );
   
   if (existingActivation) {
     existingActivation.lastSeenAt = now;
     existingActivation.isActive = true;
+    existingActivation.scope = requestedScope;
+    existingActivation.deactivatedAt = null;
+    existingActivation.deactivatedBy = null;
+    if (requestedScope === 'web') {
+      existingActivation.sessionLeaseHours = LICENSE_WEB_SESSION_TTL_HOURS;
+    } else {
+      delete existingActivation.sessionLeaseHours;
+    }
   } else {
     activations.push({
       activationId: crypto.randomUUID(),
-      licenseKey: licenseKey.toUpperCase(),
-      deviceId,
+      licenseKey: normalizedKey,
+      deviceId: normalizedDeviceId,
       deviceName: deviceName || 'Unknown Device',
       appId,
       ipAddress: req.ip,
       activatedAt: now,
       lastSeenAt: now,
       isActive: true,
+      scope: requestedScope,
+      ...(requestedScope === 'web' ? { sessionLeaseHours: LICENSE_WEB_SESSION_TTL_HOURS } : {}),
     });
   }
   
@@ -3066,13 +3162,15 @@ app.post('/api/licenses/activate', (req, res) => {
  */
 app.post('/api/licenses/verify', (req, res) => {
   const { licenseKey, deviceId, appId } = req.body;
+  const normalizedKey = String(licenseKey || '').trim().toUpperCase();
+  const normalizedDeviceId = String(deviceId || '').trim();
   
-  if (!licenseKey || !deviceId) {
+  if (!normalizedKey || !normalizedDeviceId) {
     return res.status(400).json({ ok: false, error: 'Missing required fields' });
   }
   
   const licenses = loadLicenses();
-  const license = licenses.find(l => l.licenseKey === licenseKey.toUpperCase());
+  const license = licenses.find(l => l.licenseKey === normalizedKey);
   
   if (!license) {
     return res.json({ ok: false, status: 'invalid', error: 'Key không hợp lệ' });
@@ -3085,6 +3183,16 @@ app.post('/api/licenses/verify', (req, res) => {
   if (license.status === 'revoked') {
     return res.json({ ok: false, status: 'revoked', error: 'Key đã bị thu hồi' });
   }
+
+  const activations = loadActivations();
+  const matchingActivation = activations.find((activation) => 
+    activation.licenseKey === normalizedKey && activation.deviceId === normalizedDeviceId
+  );
+  const wasExpiredWebSession = isActivationExpiredWebSession(matchingActivation, Date.now());
+  const releasedCount = releaseExpiredWebSessions(activations);
+  if (releasedCount > 0) {
+    saveActivations(activations);
+  }
   
   if (appId && !isLicenseAppCompatible(license, appId)) {
     return res.json({
@@ -3095,20 +3203,31 @@ app.post('/api/licenses/verify', (req, res) => {
   }
   
   // Check if device is registered
-  const activations = loadActivations();
-  const deviceActivation = activations.find(a => 
-    a.licenseKey === licenseKey.toUpperCase() && 
-    a.deviceId === deviceId && 
-    a.isActive
+  const deviceActivation = activations.find((activation) => 
+    activation.licenseKey === normalizedKey && 
+    activation.deviceId === normalizedDeviceId && 
+    activation.isActive
   );
   
   if (!deviceActivation) {
+    if (wasExpiredWebSession) {
+      return res.json({
+        ok: false,
+        status: 'web_session_expired',
+        error: 'Phiên web đã hết hạn. Vui lòng kích hoạt lại key.',
+      });
+    }
+
     return res.json({ ok: false, status: 'device_not_activated', error: 'Thiết bị chưa được kích hoạt' });
   }
   
   // Update last seen
   const now = new Date().toISOString();
   deviceActivation.lastSeenAt = now;
+  deviceActivation.scope = getLicenseDeviceScope(normalizedDeviceId);
+  if (deviceActivation.scope === 'web' && !Number.isFinite(Number(deviceActivation.sessionLeaseHours))) {
+    deviceActivation.sessionLeaseHours = LICENSE_WEB_SESSION_TTL_HOURS;
+  }
   saveActivations(activations);
   
   license.lastVerifiedAt = now;
@@ -4758,6 +4877,10 @@ app.get('/api/admin/licenses', requireAdmin, (req, res) => {
   licenses.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
   const allActivations = loadActivations();
+  const releasedCount = releaseExpiredWebSessions(allActivations);
+  if (releasedCount > 0) {
+    saveActivations(allActivations);
+  }
   const total = licenses.length;
   const startIndex = (page - 1) * limit;
   const paginated = licenses
@@ -4849,9 +4972,10 @@ app.post('/api/admin/licenses', requireAdmin, (req, res) => {
 app.patch('/api/admin/licenses/:licenseKey', requireAdmin, (req, res) => {
   const { licenseKey } = req.params;
   const { status, extendMonths, notes, deviceLimit } = req.body;
+  const normalizedKey = String(licenseKey || '').trim().toUpperCase();
 
   const licenses = loadLicenses();
-  const license = licenses.find(l => l.licenseKey === licenseKey.toUpperCase());
+  const license = licenses.find(l => l.licenseKey === normalizedKey);
 
   if (!license) {
     return res.status(404).json({ ok: false, error: 'License not found' });
@@ -4896,7 +5020,7 @@ app.patch('/api/admin/licenses/:licenseKey', requireAdmin, (req, res) => {
 app.post('/api/admin/licenses/:licenseKey/devices/reset', requireAdmin, (req, res) => {
   const { licenseKey } = req.params;
   const { deviceId } = req.body || {};
-  const normalizedKey = String(licenseKey || '').toUpperCase();
+  const normalizedKey = String(licenseKey || '').trim().toUpperCase();
 
   const licenses = loadLicenses();
   const license = licenses.find(l => l.licenseKey === normalizedKey);
@@ -4936,11 +5060,12 @@ app.post('/api/admin/licenses/:licenseKey/devices/reset', requireAdmin, (req, re
  */
 app.delete('/api/admin/licenses/:licenseKey', requireAdmin, (req, res) => {
   const { licenseKey } = req.params;
+  const normalizedKey = String(licenseKey || '').trim().toUpperCase();
 
   let licenses = loadLicenses();
   const initialLength = licenses.length;
 
-  licenses = licenses.filter(l => l.licenseKey !== licenseKey.toUpperCase());
+  licenses = licenses.filter(l => l.licenseKey !== normalizedKey);
 
   if (licenses.length === initialLength) {
     return res.status(404).json({ ok: false, error: 'License not found' });
@@ -4950,7 +5075,7 @@ app.delete('/api/admin/licenses/:licenseKey', requireAdmin, (req, res) => {
 
   // Also clean up activations
   let activations = loadActivations();
-  activations = activations.filter(a => a.licenseKey !== licenseKey.toUpperCase());
+  activations = activations.filter(a => a.licenseKey !== normalizedKey);
   saveActivations(activations);
 
   res.json({ ok: true, message: 'License deleted successfully' });
@@ -5881,6 +6006,3 @@ app.listen(PORT, () => {
 });
 
 export default app;
-
-
-

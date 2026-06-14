@@ -96,6 +96,15 @@ Trong tài khoản khách hàng cần hiển thị:
 - Admin UI cần hiển thị số thiết bị đang active và nút reset thiết bị cho từng license.
 - Desktop fingerprint ổn định xử lý ở đợt sau, không trộn vào đợt 1.
 
+## Triển khai đợt 4
+
+- Web session limit = `1`, tách riêng khỏi desktop device limit.
+- TTL web session mặc định là `24` giờ qua `LICENSE_WEB_SESSION_TTL_HOURS`.
+- Web session stale phải tự release khi activate/verify để không bị kẹt slot vĩnh viễn.
+- Desktop vẫn gắn cứng theo device ID và không tự hết hạn theo TTL.
+- Unknown/legacy device xử lý như desktop để an toàn.
+- Một license được phép đồng thời 1 desktop device active và 1 web session active.
+
 ## Lưu ý bảo mật
 
 - Không lưu API key thật, secret key, Clerk secret, Resend key, payment secret trong tài liệu này.

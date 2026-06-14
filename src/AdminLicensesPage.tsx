@@ -25,6 +25,10 @@ interface License {
     activatedAt?: string | null;
     lastSeenAt?: string | null;
     isActive?: boolean;
+    scope?: 'web' | 'desktop';
+    deactivatedAt?: string | null;
+    deactivatedBy?: string | null;
+    sessionLeaseHours?: number | null;
   }[];
 }
 
@@ -764,7 +768,7 @@ function AdminLicensesPage({ onBack }: { onBack: () => void }) {
                               <div className="mt-1 max-w-[240px] space-y-0.5 text-[11px] text-gray-400">
                                 {devices.slice(0, 2).map((device) => (
                                   <div key={device.activationId || device.deviceId} className="truncate" title={device.deviceId}>
-                                    {device.deviceName || device.deviceId} · {formatDate(device.lastSeenAt)}
+                                    {device.deviceName || device.deviceId} · {device.scope === 'web' ? 'Web' : 'Desktop'} · {formatDate(device.lastSeenAt)}
                                   </div>
                                 ))}
                                 {devices.length > 2 ? (
