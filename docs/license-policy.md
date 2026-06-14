@@ -22,6 +22,7 @@ Một key khách hàng có thể dùng đồng thời:
   - status
 - Nếu khách đổi máy, admin cần có chức năng reset hoặc chuyển device ID.
 - Không cho 1 key kích hoạt nhiều desktop device cùng lúc.
+- Desktop binding phải dùng machine/device ID ổn định, không dùng random ID trong localStorage.
 
 ## Web app
 
@@ -31,6 +32,7 @@ Một key khách hàng có thể dùng đồng thời:
   - license key
 - Khách có thể đăng nhập trên nhiều thiết bị.
 - Nhưng tại một thời điểm chỉ cho 1 web session hoạt động.
+- Web session không được gắn chết vĩnh viễn vào một browser localStorage. Nếu khách mất browser cũ, admin phải reset được slot thiết bị.
 - Nếu đăng nhập ở thiết bị mới, hệ thống có thể:
   - chặn thiết bị mới và báo đang có phiên hoạt động
   - hoặc cho thiết bị mới vào và đá phiên cũ ra
@@ -86,6 +88,13 @@ Trong tài khoản khách hàng cần hiển thị:
 - Reset/chuyển device ID desktop
 - Quản lý web session active
 - Khách hàng đã mua gói nào
+
+## Triển khai đợt 1
+
+- Default license mới: `deviceLimit = 1` cho cả auto-paid và admin tạo tay.
+- Backend vẫn chặn theo active device slots, nhưng admin phải có endpoint reset thiết bị bị kẹt.
+- Admin UI cần hiển thị số thiết bị đang active và nút reset thiết bị cho từng license.
+- Desktop fingerprint ổn định xử lý ở đợt sau, không trộn vào đợt 1.
 
 ## Lưu ý bảo mật
 
